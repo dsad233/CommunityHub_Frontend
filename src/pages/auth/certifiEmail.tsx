@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "../styles/certifiEmail.css";
+import "../../styles/auth/certifiEmail.css";
 import { useNavigate } from "react-router-dom";
 
 export default function CertifiEmail() {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import "../styles/verifyPage.css";
+import "../../styles/auth/verifyPage.css";
 
 type VerifyStatus = "loading" | "success" | "already-verified" | "error";
 

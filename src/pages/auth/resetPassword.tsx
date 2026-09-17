@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "../styles/resetPassword.css";
+import "../../styles/auth/resetPassword.css";
 import { useSearchParams } from "react-router-dom";
 
 export default function ResetPassword() {
