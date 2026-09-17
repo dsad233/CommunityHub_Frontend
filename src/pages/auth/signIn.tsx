@@ -121,7 +121,7 @@ export default function SignIn() {
                 <span>아이디 또는 이메일</span>
                 <input
                   type="text"
-                  placeholder="loginId 또는 email 입력"
+                  placeholder="아이디 또는 이메일 입력"
                   name="loginId"
                   onChange={(e) => setLoginId(e.target.value)}
                 />
