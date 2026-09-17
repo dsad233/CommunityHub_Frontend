@@ -615,6 +615,7 @@ export function PostOne() {
             const response = await res.json();
             alert(response.error || response.message);
             setIsLoading(false);
+            navigate(-1);
           } else if (res.status >= 500) {
             alert("서버 에러가 발생하였습니다. 잠시 후 다시 시도해주세요.");
             return;
@@ -635,7 +636,7 @@ export function PostOne() {
     };
 
     requestPost();
-  }, [pathname, postId, isSession]);
+  }, [pathname, postId, isSession, navigate]);
 
   /*
     게시글 상세 요청이 완료된 뒤:
