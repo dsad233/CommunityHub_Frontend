@@ -21,12 +21,14 @@ import GoogleRedirect from "./pages/auth/googleRedirect.tsx";
 import GoogleLinkRedirect from "./pages/auth/googleLinkRedirect.tsx";
 import GoogleSignUpSuccessRedirect from "./pages/auth/googleSignUpSuccessRedirect.tsx";
 import GoogleSignUpFailureRedirect from "./pages/auth/GoogleSignUpFailureRedirect.tsx";
+import NotFound from "./pages/common/notFound.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
     <StrictMode>
       <Header />
       <Routes>
+        <Route path="*" element={<NotFound />} />
         <Route path="/" element={<App />} />
         // auth
         <Route path="/signin" element={<SignIn />} />
