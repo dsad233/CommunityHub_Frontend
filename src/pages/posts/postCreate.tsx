@@ -61,6 +61,29 @@ const CustomImage = Image.extend({
           };
         },
       },
+
+      height: {
+        default: null,
+
+        parseHTML: (element) => {
+          return (
+            element.getAttribute("data-height") ||
+            element.getAttribute("height") ||
+            element.style.height ||
+            null
+          );
+        },
+
+        renderHTML: (attributes) => {
+          if (!attributes.height) {
+            return {};
+          }
+
+          return {
+            "data-height": attributes.height,
+          };
+        },
+      },
     };
   },
 });
@@ -103,6 +126,56 @@ export default function PostCreate() {
     ],
 
     content: "<p></p>",
+
+    editorProps: {
+      /*
+        외부 페이지, Word, Google Docs의 HTML/CSS는 사용하지 않고
+        클립보드의 순수 텍스트만 직접 삽입합니다.
+      */
+      handlePaste: (view, event) => {
+        const clipboardText = event.clipboardData?.getData("text/plain");
+
+        if (!clipboardText) {
+          return false;
+        }
+
+        event.preventDefault();
+
+        const normalizedText = clipboardText
+          .replace(/\r\n/g, "\n")
+          .replace(/\r/g, "\n");
+
+        const lines = normalizedText.split("\n");
+
+        /*
+          기존에 선택된 텍스트가 있다면 먼저 제거합니다.
+        이후 현재 커서 위치에 한 줄씩 삽입하고 줄마다 문단을 나눕니다.
+        빈 줄은 빈 문단으로 유지됩니다.
+        */
+        let transaction = view.state.tr.deleteSelection();
+
+        lines.forEach((line, index) => {
+          if (line.length > 0) {
+            transaction = transaction.insertText(
+              line,
+              transaction.selection.from,
+            );
+          }
+
+          if (index < lines.length - 1) {
+            transaction = transaction.split(transaction.selection.from);
+          }
+        });
+
+        view.dispatch(transaction.scrollIntoView());
+
+        return true;
+      },
+
+      transformPastedText: (text) => {
+        return text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+      },
+    },
   });
 
   const clearImageSelection = () => {
@@ -389,26 +462,6 @@ export default function PostCreate() {
   }, [isSession, navigate]);
 
   useEffect(() => {
-    if (!editor) {
-      return;
-    }
-
-    const handleOutsidePointerDown = (event: PointerEvent) => {
-      const target = event.target as Node;
-
-      if (!editor.view.dom.contains(target)) {
-        clearImageSelection();
-      }
-    };
-
-    document.addEventListener("pointerdown", handleOutsidePointerDown);
-
-    return () => {
-      document.removeEventListener("pointerdown", handleOutsidePointerDown);
-    };
-  }, [editor]);
-
-  useEffect(() => {
     return () => {
       pendingImages.forEach((pendingImage) => {
         URL.revokeObjectURL(pendingImage.previewUrl);
@@ -574,8 +627,8 @@ export default function PostCreate() {
               </div>
 
               <small>
-                엔터를 두 번 누르면 빈 줄이 저장됩니다. 이미지는 클릭 후
-                모서리를 드래그해 크기를 조절할 수 있습니다.
+                외부 텍스트를 붙여넣으면 서식은 제거되고 텍스트만 입력됩니다.
+                이미지는 클릭 후 모서리를 드래그해 크기를 조절할 수 있습니다.
               </small>
             </div>
 

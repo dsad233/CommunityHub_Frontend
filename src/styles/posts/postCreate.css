@@ -280,10 +280,13 @@ button {
 .post-rich-editor .ProseMirror {
   min-height: 380px;
   padding: 20px;
-  outline: none;
   overflow: visible;
+  outline: none;
   color: #111827;
-  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.7;
 }
 
 .post-rich-editor .ProseMirror > *:first-child {
@@ -291,32 +294,34 @@ button {
 }
 
 .post-rich-editor .ProseMirror > p {
-  min-height: 1.5em;
-  margin: 0 0 4px;
-  line-height: 1.5;
-}
-
-/*
-  Enter 두 번으로 만든 빈 문단.
-  편집 화면에서 <p><br></p> 또는 <p></p>로 보일 수 있습니다.
-*/
-.post-rich-editor .ProseMirror > p:empty,
-.post-rich-editor .ProseMirror > p:has(> br:only-child) {
-  min-height: 1.5em;
-  height: 1.5em;
-  margin: 0 0 4px;
+  min-height: 1.7em;
+  margin: 0 0 12px;
   padding: 0;
-  line-height: 1.5;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .post-rich-editor .ProseMirror > p:last-child {
   margin-bottom: 0;
 }
 
+.post-rich-editor .ProseMirror > p:empty,
+.post-rich-editor .ProseMirror > p:has(> br:only-child) {
+  min-height: 1.7em;
+  height: 1.7em;
+  margin: 0 0 12px;
+  padding: 0;
+  line-height: 1.7;
+}
+
 .post-rich-editor .ProseMirror img {
   display: block;
   max-width: 100%;
   height: auto;
+  margin: 12px 0;
+  object-fit: contain;
   user-select: none;
   cursor: grab;
   -webkit-user-drag: element;
