@@ -242,6 +242,11 @@ export function PostOne() {
   };
 
   const handleStartReply = (commentId: string) => {
+    if (!isSession) {
+      alert("로그인 후 이용 가능합니다.");
+      return;
+    }
+
     setReplyingCommentId(commentId);
     setReplyContent("");
     setEditingCommentId(null);
@@ -848,7 +853,6 @@ export function PostOne() {
 
                               <div className="post-one-comment-actions">
                                 {!isEditing &&
-                                  isSession &&
                                   comment.deletedAt === "FALSE" &&
                                   comment.id && (
                                     <button
@@ -1053,11 +1057,9 @@ export function PostOne() {
                                         <strong>{reply.author.nickname}</strong>
                                         <span>{reply.createdAt}</span>
                                       </div>
-                                      {!isReplyEditing &&
-                                        isSession &&
-                                        reply.author.property &&
-                                        reply.deletedAt === "FALSE" && (
-                                          <div className="post-one-comment-actions">
+                                      <div className="post-one-comment-actions">
+                                        {!isReplyEditing &&
+                                          reply.deletedAt === "FALSE" && (
                                             <button
                                               type="button"
                                               className="post-one-comment-action like"
@@ -1079,7 +1081,12 @@ export function PostOne() {
                                             >
                                               좋아요 {reply.count.replyLikes}
                                             </button>
+                                          )}
 
+                                        {!isReplyEditing &&
+                                          isSession &&
+                                          reply.author.property &&
+                                          reply.deletedAt === "FALSE" && (
                                             <button
                                               type="button"
                                               className="post-one-comment-action edit"
@@ -1092,7 +1099,12 @@ export function PostOne() {
                                             >
                                               수정
                                             </button>
+                                          )}
 
+                                        {!isReplyEditing &&
+                                          isSession &&
+                                          reply.author.property &&
+                                          reply.deletedAt === "FALSE" && (
                                             <button
                                               type="button"
                                               className="post-one-comment-action delete"
@@ -1111,8 +1123,8 @@ export function PostOne() {
                                             >
                                               삭제
                                             </button>
-                                          </div>
-                                        )}
+                                          )}
+                                      </div>
                                     </div>
 
                                     {isReplyEditing ? (
