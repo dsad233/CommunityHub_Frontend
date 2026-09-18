@@ -13,6 +13,7 @@ type TExistingImage = {
   id: string;
   previewUrl: string;
   base64: string;
+  storageIndex: number;
 };
 
 type TExistingPost = {
@@ -46,6 +47,28 @@ const CustomImage = Image.extend({
         },
       },
 
+      imageIndex: {
+        default: null,
+
+        parseHTML: (element) => {
+          const value = element.getAttribute("data-image-index");
+          return value === null ? null : Number(value);
+        },
+
+        renderHTML: (attributes) => {
+          if (
+            attributes.imageIndex === null ||
+            attributes.imageIndex === undefined
+          ) {
+            return {};
+          }
+
+          return {
+            "data-image-index": String(attributes.imageIndex),
+          };
+        },
+      },
+
       width: {
         default: null,
 
@@ -65,6 +88,31 @@ const CustomImage = Image.extend({
 
           return {
             "data-width": attributes.width,
+            style: `width: ${attributes.width};`,
+          };
+        },
+      },
+
+      height: {
+        default: null,
+
+        parseHTML: (element) => {
+          return (
+            element.getAttribute("data-height") ||
+            element.getAttribute("height") ||
+            element.style.height ||
+            null
+          );
+        },
+
+        renderHTML: (attributes) => {
+          if (!attributes.height) {
+            return {};
+          }
+
+          return {
+            "data-height": attributes.height,
+            style: `height: ${attributes.height};`,
           };
         },
       },
@@ -137,6 +185,10 @@ const replaceImageReferencesForEditor = (
 
     imageElement.src = existingImage.previewUrl;
     imageElement.setAttribute("data-image-id", existingImage.id);
+    imageElement.setAttribute(
+      "data-image-index",
+      String(existingImage.storageIndex),
+    );
   });
 
   return documentNode.body.innerHTML;
@@ -186,6 +238,47 @@ export default function PostUpdate() {
     ],
 
     content: "<p></p>",
+
+    editorProps: {
+      handlePaste: (view, event) => {
+        const clipboardText = event.clipboardData?.getData("text/plain");
+
+        if (!clipboardText) {
+          return false;
+        }
+
+        event.preventDefault();
+
+        const normalizedText = clipboardText
+          .replace(/\r\n/g, "\n")
+          .replace(/\r/g, "\n");
+
+        const lines = normalizedText.split("\n");
+
+        let transaction = view.state.tr.deleteSelection();
+
+        lines.forEach((line, index) => {
+          if (line.length > 0) {
+            transaction = transaction.insertText(
+              line,
+              transaction.selection.from,
+            );
+          }
+
+          if (index < lines.length - 1) {
+            transaction = transaction.split(transaction.selection.from);
+          }
+        });
+
+        view.dispatch(transaction.scrollIntoView());
+
+        return true;
+      },
+
+      transformPastedText: (text) => {
+        return text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+      },
+    },
   });
 
   const clearImageSelection = () => {
@@ -268,6 +361,11 @@ export default function PostUpdate() {
       const base64 = await fileToBase64(file);
       const id = crypto.randomUUID();
       const previewUrl = URL.createObjectURL(file);
+      const storageIndex =
+        editorImages.reduce(
+          (maximumIndex, image) => Math.max(maximumIndex, image.storageIndex),
+          -1,
+        ) + 1;
 
       setEditorImages((previous) => [
         ...previous,
@@ -275,6 +373,7 @@ export default function PostUpdate() {
           id,
           previewUrl,
           base64,
+          storageIndex,
         },
       ]);
 
@@ -287,6 +386,7 @@ export default function PostUpdate() {
             src: previewUrl,
             alt: file.name,
             imageId: id,
+            imageIndex: storageIndex,
           },
         })
         .run();
@@ -302,8 +402,22 @@ export default function PostUpdate() {
     }
   };
 
-  const convertEditorHtmlToRequestData = (html: string) => {
-    const documentNode = new DOMParser().parseFromString(html, "text/html");
+  const convertEditorHtmlToRequestData = () => {
+    if (!editor) {
+      return {
+        context: "<p></p>",
+        images: [] as string[],
+      };
+    }
+
+    /*
+      리사이즈 확장이 반영한 style.width / style.height를 보존하기 위해
+      에디터의 HTML을 먼저 가져옵니다.
+    */
+    const documentNode = new DOMParser().parseFromString(
+      editor.getHTML(),
+      "text/html",
+    );
 
     const paragraphElements =
       documentNode.querySelectorAll<HTMLParagraphElement>("p");
@@ -317,69 +431,112 @@ export default function PostUpdate() {
       }
     });
 
-    const imageElements =
-      documentNode.querySelectorAll<HTMLImageElement>("img");
+    const imageElements = Array.from(
+      documentNode.querySelectorAll<HTMLImageElement>("img"),
+    );
 
-    const images: string[] = [];
+    const imageIdsInDocumentOrder: string[] = [];
+
+    editor.state.doc.descendants((node) => {
+      if (node.type.name === "image" && node.attrs.imageId) {
+        imageIdsInDocumentOrder.push(String(node.attrs.imageId));
+      }
+
+      return true;
+    });
+
+    const imageElementsById = new Map<string, HTMLImageElement>();
 
     imageElements.forEach((imageElement) => {
       const imageId = imageElement.getAttribute("data-image-id");
 
-      if (!imageId) {
-        imageElement.remove();
-        return;
+      if (imageId) {
+        imageElementsById.set(imageId, imageElement);
       }
-
-      const editorImage = editorImages.find((image) => image.id === imageId);
-
-      if (!editorImage) {
-        imageElement.remove();
-        return;
-      }
-
-      const imageIndex = images.length;
-
-      images.push(editorImage.base64);
-
-      imageElement.setAttribute("src", `image://${imageIndex}`);
-
-      const savedWidth =
-        imageElement.getAttribute("data-width") ||
-        imageElement.getAttribute("width") ||
-        imageElement.style.width;
-
-      if (savedWidth) {
-        const width = savedWidth.endsWith("%")
-          ? savedWidth
-          : savedWidth.endsWith("px")
-            ? savedWidth
-            : `${savedWidth}px`;
-
-        imageElement.setAttribute("data-width", width);
-        imageElement.style.width = width;
-      }
-
-      const savedHeight =
-        imageElement.getAttribute("data-height") ||
-        imageElement.getAttribute("height") ||
-        imageElement.style.height;
-
-      if (savedHeight) {
-        const height = savedHeight.endsWith("%")
-          ? savedHeight
-          : savedHeight.endsWith("px")
-            ? savedHeight
-            : `${savedHeight}px`;
-
-        imageElement.setAttribute("data-height", height);
-        imageElement.style.height = height;
-      }
-
-      imageElement.removeAttribute("data-image-id");
     });
 
+    const orderedImages = imageIdsInDocumentOrder
+      .map((imageId, order) => {
+        const image = editorImages.find((item) => item.id === imageId);
+
+        return image ? { image, order } : null;
+      })
+      .filter(
+        (entry): entry is { image: TExistingImage; order: number } =>
+          entry !== null,
+      )
+      .sort((firstEntry, secondEntry) => firstEntry.order - secondEntry.order);
+
+    const imageIndexById = new Map(
+      orderedImages.map((entry, imageIndex) => [entry.image.id, imageIndex]),
+    );
+
+    // 백엔드에는 order로 정렬된 문자열 배열만 전송합니다.
+    const images = orderedImages.map((entry) => entry.image.base64);
+
+    imageIdsInDocumentOrder.forEach((imageId) => {
+      const imageElement = imageElementsById.get(imageId);
+      const editorImage = editorImages.find((image) => image.id === imageId);
+      const imageIndex = imageIndexById.get(imageId);
+
+      if (!imageElement || !editorImage || imageIndex === undefined) {
+        return;
+      }
+
+      /*
+          이미지 리사이즈 결과를 우선순위대로 저장합니다.
+          style -> data-width/data-height -> width/height 순서입니다.
+        */
+      const savedWidth =
+        imageElement.style.width ||
+        imageElement.getAttribute("data-width") ||
+        imageElement.getAttribute("width") ||
+        "";
+
+      const savedHeight =
+        imageElement.style.height ||
+        imageElement.getAttribute("data-height") ||
+        imageElement.getAttribute("height") ||
+        "";
+
+      if (savedWidth) {
+        imageElement.style.width = savedWidth;
+        imageElement.setAttribute("data-width", savedWidth);
+      }
+
+      if (savedHeight) {
+        imageElement.style.height = savedHeight;
+        imageElement.setAttribute("data-height", savedHeight);
+      }
+
+      imageElement.setAttribute("src", `image://${imageIndex}`);
+      imageElement.removeAttribute("data-image-id");
+      imageElement.removeAttribute("data-image-index");
+    });
+
+    imageElements.forEach((imageElement) => {
+      const source = imageElement.getAttribute("src") || "";
+
+      if (!source.startsWith("image://")) {
+        imageElement.remove();
+      }
+    });
+
+    /*
+      문서에 존재하지 않는 이미지, imageId를 찾지 못한 이미지는 저장 HTML에서 제거합니다.
+    */
+    documentNode
+      .querySelectorAll<HTMLImageElement>("img")
+      .forEach((imageElement) => {
+        const source = imageElement.getAttribute("src") || "";
+
+        if (!source.startsWith("image://")) {
+          imageElement.remove();
+        }
+      });
+
     return {
-      context: documentNode.body.innerHTML,
+      context: documentNode.body.innerHTML || "<p></p>",
       images,
     };
   };
@@ -431,10 +588,7 @@ export default function PostUpdate() {
     try {
       setIsSubmitting(true);
 
-      const htmlWithPreviewUrls = editor.getHTML();
-
-      const { context, images } =
-        convertEditorHtmlToRequestData(htmlWithPreviewUrls);
+      const { context, images } = convertEditorHtmlToRequestData();
 
       const res = await fetch(
         `/api/posts/${encodeURIComponent(postId)}/update`,
@@ -524,6 +678,7 @@ export default function PostUpdate() {
             id: `existing-image-${index}`,
             previewUrl: URL.createObjectURL(blob),
             base64,
+            storageIndex: index,
           };
         });
 
@@ -577,26 +732,6 @@ export default function PostUpdate() {
 
     didSetEditorContentRef.current = true;
   }, [editor, existingContext, isPostLoaded]);
-
-  useEffect(() => {
-    if (!editor) {
-      return;
-    }
-
-    const handleOutsidePointerDown = (event: PointerEvent) => {
-      const target = event.target as Node;
-
-      if (!editor.view.dom.contains(target)) {
-        clearImageSelection();
-      }
-    };
-
-    document.addEventListener("pointerdown", handleOutsidePointerDown);
-
-    return () => {
-      document.removeEventListener("pointerdown", handleOutsidePointerDown);
-    };
-  }, [editor]);
 
   useEffect(() => {
     return () => {
@@ -765,8 +900,9 @@ export default function PostUpdate() {
                   </div>
 
                   <small>
-                    이미지를 클릭하면 테두리와 네 개의 크기 조절 점이
-                    나타납니다. 빈 줄과 문단 간격도 저장됩니다.
+                    외부 텍스트를 붙여넣으면 서식은 제거되고 텍스트만
+                    입력됩니다. 이미지를 클릭하면 테두리와 네 개의 크기 조절
+                    점이 나타납니다.
                   </small>
                 </div>
 

@@ -181,8 +181,6 @@ button {
   line-height: 1.7;
 }
 
-/* 공개 여부 */
-
 .post-update-radio-group {
   display: flex;
   flex-wrap: wrap;
@@ -227,8 +225,6 @@ button {
   color: #3730a3;
 }
 
-/* 에디터 상단 */
-
 .post-update-editor-head {
   display: flex;
   align-items: center;
@@ -264,8 +260,6 @@ button {
   transform: none;
 }
 
-/* 리치 에디터 */
-
 .post-update-rich-editor {
   position: relative;
   min-height: 380px;
@@ -286,10 +280,13 @@ button {
 .post-update-rich-editor .ProseMirror {
   min-height: 380px;
   padding: 20px;
-  outline: none;
   overflow: visible;
+  outline: none;
   color: #111827;
-  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.7;
 }
 
 .post-update-rich-editor .ProseMirror > *:first-child {
@@ -297,34 +294,34 @@ button {
 }
 
 .post-update-rich-editor .ProseMirror > p {
-  min-height: 1.5em;
-  margin: 0 0 4px;
-  line-height: 1.5;
-}
-
-/*
-  게시글 생성 시 저장한 <p>&nbsp;</p>와
-  수정 중 Enter 두 번으로 만들어진 빈 문단의 높이를 유지합니다.
-*/
-.post-update-rich-editor .ProseMirror > p:empty,
-.post-update-rich-editor .ProseMirror > p:has(> br:only-child) {
-  min-height: 1.5em;
-  height: 1.5em;
-  margin: 0 0 4px;
+  min-height: 1.7em;
+  margin: 0 0 12px;
   padding: 0;
-  line-height: 1.5;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .post-update-rich-editor .ProseMirror > p:last-child {
   margin-bottom: 0;
 }
 
-/* 에디터 이미지 */
+.post-update-rich-editor .ProseMirror > p:empty,
+.post-update-rich-editor .ProseMirror > p:has(> br:only-child) {
+  min-height: 1.7em;
+  height: 1.7em;
+  margin: 0 0 12px;
+  padding: 0;
+  line-height: 1.7;
+}
 
 .post-update-rich-editor .ProseMirror img {
   display: block;
   max-width: 100%;
   height: auto;
+  margin: 12px 0;
+  object-fit: contain;
   user-select: none;
   cursor: grab;
   -webkit-user-drag: element;
@@ -334,15 +331,11 @@ button {
   cursor: grabbing;
 }
 
-/* 선택한 이미지 테두리 */
-
 .post-update-rich-editor .ProseMirror-selectednode {
   outline: 2px solid #6366f1;
   outline-offset: 5px;
   border-radius: 8px;
 }
-
-/* Tiptap 리사이즈 wrapper */
 
 .post-update-rich-editor .ProseMirror [data-resize-container],
 .post-update-rich-editor .ProseMirror .resize-node-view,
@@ -355,10 +348,6 @@ button {
   overflow: visible;
   line-height: 0;
 }
-
-/*
-  이미지 선택 전에는 리사이즈 점을 숨깁니다.
-*/
 
 .post-update-rich-editor .ProseMirror [data-resize-handle],
 .post-update-rich-editor .ProseMirror [data-direction],
@@ -389,8 +378,6 @@ button {
     transform 0.15s ease;
 }
 
-/* 선택된 이미지의 핸들만 표시 */
-
 .post-update-rich-editor
   .ProseMirror
   .ProseMirror-selectednode
@@ -407,8 +394,6 @@ button {
   opacity: 1;
   pointer-events: auto;
 }
-
-/* 선택 클래스가 img에 붙는 구조도 처리 */
 
 .post-update-rich-editor
   .ProseMirror
@@ -438,8 +423,6 @@ button {
   opacity: 1;
   pointer-events: auto;
 }
-
-/* 네 모서리 핸들 위치 */
 
 .post-update-rich-editor .ProseMirror [data-direction="top-left"],
 .post-update-rich-editor .ProseMirror [data-position="top-left"],
@@ -480,8 +463,6 @@ button {
   transform: scale(1.2);
 }
 
-/* 본문 내 이미지 이동 위치 표시 */
-
 .post-update-rich-editor .ProseMirror .dropcursor {
   position: absolute;
   z-index: 30;
@@ -489,8 +470,6 @@ button {
   background: #6366f1;
   pointer-events: none;
 }
-
-/* 수정 전 확인 */
 
 .post-update-preview {
   padding: 18px 20px;
@@ -515,8 +494,6 @@ button {
   color: #4b5563;
   line-height: 1.7;
 }
-
-/* 버튼 */
 
 .post-update-actions {
   display: flex;
