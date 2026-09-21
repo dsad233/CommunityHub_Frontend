@@ -312,7 +312,11 @@ export default function App() {
                   <span>전체 사용자</span>
                 </div>
                 <div className="stat-card">
-                  <strong>{todayCounts.posts}</strong>
+                  <strong>
+                    {todayCounts.posts.toLocaleString("ko-KR", {
+                      maximumFractionDigits: 4,
+                    })}
+                  </strong>
                   <span>오늘 게시글</span>
                 </div>
                 <div className="stat-card">
@@ -345,7 +349,12 @@ export default function App() {
                       >
                         <span className="category-key">{category.key}</span>
                         <strong>{category.name}</strong>
-                        <p>{category.count}개의 게시글</p>
+                        <p>
+                          {category.count.toLocaleString("ko-KR", {
+                            maximumFractionDigits: 4,
+                          })}
+                          개의 게시글
+                        </p>
                       </article>
                     ))}
                   </div>
@@ -420,7 +429,11 @@ export default function App() {
                         <div>
                           <strong>{user.nickname}</strong>
                           <p>
-                            {user.role} · 게시글 {user.posts}개
+                            {user.role} · 게시글{" "}
+                            {user.posts.toLocaleString("ko-KR", {
+                              maximumFractionDigits: 4,
+                            })}
+                            개
                           </p>
                         </div>
                       </div>
@@ -435,15 +448,27 @@ export default function App() {
 
                   <div className="mini-stats">
                     <div>
-                      <strong>{todayCounts.comments}</strong>
+                      <strong>
+                        {todayCounts.comments.toLocaleString("ko-KR", {
+                          maximumFractionDigits: 4,
+                        })}
+                      </strong>
                       <span>새 댓글</span>
                     </div>
                     <div>
-                      <strong>{todayCounts.users}</strong>
+                      <strong>
+                        {todayCounts.users.toLocaleString("ko-KR", {
+                          maximumFractionDigits: 4,
+                        })}
+                      </strong>
                       <span>새 회원</span>
                     </div>
                     <div>
-                      <strong>{todayCounts.likes}</strong>
+                      <strong>
+                        {todayCounts.likes.toLocaleString("ko-KR", {
+                          maximumFractionDigits: 4,
+                        })}
+                      </strong>
                       <span>좋아요</span>
                     </div>
                   </div>

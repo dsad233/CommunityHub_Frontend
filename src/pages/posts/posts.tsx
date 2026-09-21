@@ -283,7 +283,11 @@ export default function Posts() {
                 <span>전체 게시글</span>
               </div>
               <div className="posts-summary-card">
-                <strong>{todayNewPosts}</strong>
+                <strong>
+                  {todayNewPosts.toLocaleString("ko-KR", {
+                    maximumFractionDigits: 4,
+                  })}
+                </strong>
                 <span>오늘 등록된 글</span>
               </div>
               <div className="posts-summary-card">

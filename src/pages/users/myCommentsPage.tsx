@@ -328,15 +328,27 @@ export default function MyCommentsPage() {
 
               <div className="my-comments-summary">
                 <div className="summary-card">
-                  <strong>{count}</strong>
+                  <strong>
+                    {count.toLocaleString("ko-KR", {
+                      maximumFractionDigits: 4,
+                    })}
+                  </strong>
                   <span>전체 댓글</span>
                 </div>
                 <div className="summary-card">
-                  <strong>{stateComments.week}</strong>
+                  <strong>
+                    {stateComments.week.toLocaleString("ko-KR", {
+                      maximumFractionDigits: 4,
+                    })}
+                  </strong>
                   <span>이번 주 작성</span>
                 </div>
                 <div className="summary-card">
-                  <strong>{stateComments.reply}</strong>
+                  <strong>
+                    {stateComments.reply.toLocaleString("ko-KR", {
+                      maximumFractionDigits: 4,
+                    })}
+                  </strong>
                   <span>대댓글</span>
                 </div>
               </div>

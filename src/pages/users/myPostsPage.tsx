@@ -175,15 +175,27 @@ export default function MyPostsPage() {
 
               <div className="my-posts-summary">
                 <div className="summary-card">
-                  <strong>{count}</strong>
+                  <strong>
+                    {count.toLocaleString("ko-KR", {
+                      maximumFractionDigits: 4,
+                    })}
+                  </strong>
                   <span>전체 게시글</span>
                 </div>
                 <div className="summary-card">
-                  <strong>{statePosts.public}</strong>
+                  <strong>
+                    {statePosts.public.toLocaleString("ko-KR", {
+                      maximumFractionDigits: 4,
+                    })}
+                  </strong>
                   <span>공개 글</span>
                 </div>
                 <div className="summary-card">
-                  <strong>{statePosts.private}</strong>
+                  <strong>
+                    {statePosts.private.toLocaleString("ko-KR", {
+                      maximumFractionDigits: 4,
+                    })}
+                  </strong>
                   <span>비공개 글</span>
                 </div>
               </div>
@@ -247,7 +259,7 @@ export default function MyPostsPage() {
             <section className="my-posts-list-section">
               <div className="my-posts-list-head">
                 <h2>게시글 목록</h2>
-                <span>{count}개</span>
+                <span>{writePosts.length}개</span>
               </div>
 
               <div className="my-posts-list">

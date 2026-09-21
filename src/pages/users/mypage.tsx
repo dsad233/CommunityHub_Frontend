@@ -339,17 +339,29 @@ export default function MyPage() {
 
             <div className="summary-grid">
               <article className="summary-card">
-                <strong>{user?.count.posts}</strong>
+                <strong>
+                  {user?.count.posts.toLocaleString("ko-KR", {
+                    maximumFractionDigits: 4,
+                  })}
+                </strong>
                 <span>작성한 게시글</span>
               </article>
 
               <article className="summary-card">
-                <strong>{user?.count.comments}</strong>
+                <strong>
+                  {user?.count.comments.toLocaleString("ko-KR", {
+                    maximumFractionDigits: 4,
+                  })}
+                </strong>
                 <span>작성한 댓글</span>
               </article>
 
               <article className="summary-card">
-                <strong>{receiveLikes}</strong>
+                <strong>
+                  {receiveLikes.toLocaleString("ko-KR", {
+                    maximumFractionDigits: 4,
+                  })}
+                </strong>
                 <span>받은 좋아요</span>
               </article>
 
